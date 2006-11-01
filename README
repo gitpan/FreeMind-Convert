@@ -1,0 +1,43 @@
+NAME
+    FreeMind::Convert - FreeMind .mm File Convert to wiki Format
+
+SYNOPSIS
+      use FreeMind::Convert ;
+  
+      my $mm = FreeMind::Convert->new ;
+      $mm->loadFile($file) ;
+      print $mm->toText() ;     # convert to plan text format.
+
+DESCRIPTION
+    FreeMind::Convert is convert module.
+
+METHODS
+  new
+      my $mm = FreeMind::Convert->new ;
+
+    Creates and returns a validator instance.
+
+  loadFile
+      $mm->loadFile($file) ;
+
+    Load .mm file.
+
+  toText
+      $mm->toText() ;
+
+    Convert to plane text format.
+
+SEE ALSO
+    freemind
+
+    <http://sourceforge.net/projects/freemind/>
+
+AUTHOR
+    Takeo Suzuki <motionbros@cpan.org>
+
+COPYRIGHT AND LICENSE
+    Copyright (C) 2006 by Takeo Suzuki, all rights reserved.
+
+    This library is free software; you can redistribute it and/or modify it
+    under the same terms as Perl itself.
+
