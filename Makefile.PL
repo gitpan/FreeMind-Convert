@@ -1,15 +1,25 @@
-use 5.008008;
-use ExtUtils::MakeMaker;
-# See lib/ExtUtils/MakeMaker.pm for details of how to influence
-# the contents of the Makefile that is written.
-WriteMakefile(
-    NAME              => 'FreeMind::Convert',
-    VERSION_FROM      => 'lib/FreeMind/Convert.pm', # finds $VERSION
-    PREREQ_PM         => {
-        'XML::Simple'       => 0.01,
-        'Class::Accessor'   => 0.01,
-    }, # e.g., Module::Name => 1.1
-    ($] >= 5.005 ?     ## Add these new keywords supported since 5.005
-      (ABSTRACT_FROM  => 'lib/FreeMind/Convert.pm', # retrieve abstract from module
-       AUTHOR         => 'A. U. Thor <a.u.thor@a.galaxy.far.far.away>') : ()),
-);
+use inc::Module::Install;
+name 'FreeMind-Convert';
+all_from 'lib/FreeMind/Convert.pm';
+
+requires('Class::Accessor') ;
+requires('XML::Simple') ;
+requires('Jcode') ;
+requires('HTML::Entities') ;
+
+install_script('bin/mm2mediawiki.pl') ;
+if( $^O eq 'MSWin32' ){
+    install_script('bin/mm2mediawiki.bat') ;
+    features(
+        'using Script for Windows' => [
+            -default => 0,
+            recommends('Win32::Clipboard'),
+        ],
+    );
+}
+
+build_requires 'Test::More';
+use_test_base;
+auto_include;
+auto_install;
+WriteAll;

@@ -1,15 +1,17 @@
 package FreeMind::Convert ;
 
-use 5.008008 ;
+#use 5.008005 ;
 use strict ;
 use warnings ;
 use base qw(Class::Accessor);
 use Carp ;
 use XML::Simple ;
+use Jcode ;
+use HTML::Entities ;
 
-our $VERSION = '0.01' ;
+our $VERSION = '0.02' ;
 
-__PACKAGE__->mk_accessors(qw(format));
+__PACKAGE__->mk_accessors(qw(_format setOutputJcode));
 
 sub new {
     my $class   = shift;
@@ -31,9 +33,30 @@ sub loadFile {
 
 sub toText {
     my $self    = shift ;
-    $self->format('text') ;
+    $self->_format('text') ;
     $self->_checkNode($self->{mm}) ;
     return $self->{result} ;
+}
+
+sub toMediaWiki {
+    my $self    = shift ;
+    $self->_format('mediawiki') ;
+    $self->_checkNode($self->{mm}) ;
+    return $self->{result} ;
+}
+
+sub _filterText {
+    my $self    = shift ;
+    my $text    = shift ;
+
+    # to unicode
+    decode_entities( $text ) ;
+    $text =~ s|^<html>(.*)</html>$|$1|i ;
+    # to japanese
+    if( $self->setOutputJcode() ){
+        Jcode::convert( \$text, $self->setOutputJcode, 'utf8' ) ;
+    }
+    return $text ;
 }
 
 sub _checkNode {
@@ -41,7 +64,23 @@ sub _checkNode {
     my $ref     = shift ;
     return if( ! defined( $ref->{node} ) ) ;
     foreach my $refc (@{$ref->{node}}){
-        $self->{result} .= qq(\t) x $self->{depth} . "$refc->{TEXT}\n" ;
+        my $text    = $self->_filterText( $refc->{TEXT} ) ;
+        # text
+        if( $self->_format() eq 'text' ){
+            $self->{result} .= qq(\t) x $self->{depth} . "$text\n" ;
+        }
+        # MediaWiki
+        elsif( $self->_format() eq 'mediawiki' ){
+            if( $self->{depth} <= 1 ){
+                my $simbol  = '=' x ( $self->{depth} + 2 ) ;
+                $self->{result} .= "$simbol $text $simbol\n" ;
+            }
+            else{
+                my $simbol  = '*' x ( $self->{depth} - 1 ) ;
+                $self->{result} .= "$simbol $text\n" ;
+            }
+        }
+
         $self->{depth}  ++ ;
         $self->_checkNode( $refc ) ;
         $self->{depth}  -- ;
@@ -60,9 +99,10 @@ FreeMind::Convert - FreeMind .mm File Convert to wiki Format
 
   use FreeMind::Convert ;
   
-  my $mm = FreeMind::Convert->new ;
+  my $mm = FreeMind::Convert->new() ;
+  $mm->setOutputJcode('sjis') ; # set Japanese Chara code.
   $mm->loadFile($file) ;
-  print $mm->toText() ;     # convert to plan text format.
+  print $mm->toText() ;         # convert to plan text format.
 
 =head1 DESCRIPTION
 
@@ -81,6 +121,12 @@ Creates and returns a validator instance.
   $mm->loadFile($file) ;
 
 Load .mm file.
+
+=head2 setOutputJcode
+
+  $mm->setOutputJcode('sjis') ;
+
+set Output Jcode.
 
 =head2 toText
 

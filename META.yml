@@ -1,12 +1,20 @@
-# http://module-build.sourceforge.net/META-spec.html
-#XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
-name:         FreeMind-Convert
-version:      0.01
-version_from: lib/FreeMind/Convert.pm
-installdirs:  site
-requires:
-    Class::Accessor:               0.01
-    XML::Simple:                   0.01
-
+abstract: FreeMind .mm File Convert to wiki Format
+author: 'Takeo Suzuki <motionbros@cpan.org>'
+build_requires:
+  Test::More: 0
 distribution_type: module
-generated_by: ExtUtils::MakeMaker version 6.30
+generated_by: Module::Install version 0.64
+license: perl
+name: FreeMind-Convert
+no_index:
+  directory:
+    - inc
+    - t
+recommends:
+  Win32::Clipboard: 0
+requires:
+  Class::Accessor: 0
+  HTML::Entities: 0
+  Jcode: 0
+  XML::Simple: 0
+version: 0.02
