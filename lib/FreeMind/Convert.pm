@@ -3,13 +3,13 @@ package FreeMind::Convert ;
 #use 5.008005 ;
 use strict ;
 use warnings ;
-use base qw(Class::Accessor);
 use Carp ;
+use base qw(Class::Accessor);
 use XML::Simple ;
 use Jcode ;
 use HTML::Entities ;
 
-our $VERSION = '0.02' ;
+our $VERSION = '0.03' ;
 
 __PACKAGE__->mk_accessors(qw(_format setOutputJcode));
 
@@ -47,11 +47,35 @@ sub toMediaWiki {
 
 sub _filterText {
     my $self    = shift ;
-    my $text    = shift ;
+    my $ref     = shift ;
+    my $text    = $ref->{TEXT} ;
 
     # to unicode
     decode_entities( $text ) ;
     $text =~ s|^<html>(.*)</html>$|$1|i ;
+
+    # set font tag
+    my $color   = $ref->{COLOR}             || undef ;
+    my $bgcolor = $ref->{BACKGROUND_COLOR}  || undef ;
+    my $size    = '1em' ;
+    my $bold ;
+    my $italic ;
+    if( defined( $ref->{font} ) ){
+        my $fontAttr    = $ref->{font}[0] ;
+        $size   = ( int( $fontAttr->{SIZE} / 1.2 ) / 10 ). 'em'     if( defined( $fontAttr->{SIZE} ) ) ;
+        $bold   = 1 if( defined( $fontAttr->{BOLD} ) && $fontAttr->{BOLD} eq 'true' ) ;
+        $italic = 1 if( defined( $fontAttr->{ITALIC} ) && $fontAttr->{ITALIC} eq 'true' ) ;
+    }
+    my $style ;
+    $style  .= "font-size: $size;"      if( defined( $size ) ) ;
+    $style  .= "color: $color;"         if( defined( $color ) ) ;
+    $style  .= "background: $bgcolor;"  if( defined( $bgcolor ) ) ;
+    $style  .= "font-weight: bold;"     if( defined( $bold ) ) ;
+    $style  .= "font-style: italic;"    if( defined( $italic ) ) ;
+    if( defined( $style ) ){
+        $text   = "<font style='$style'>$text</font>" ;
+    }
+
     # to japanese
     if( $self->setOutputJcode() ){
         Jcode::convert( \$text, $self->setOutputJcode, 'utf8' ) ;
@@ -64,7 +88,7 @@ sub _checkNode {
     my $ref     = shift ;
     return if( ! defined( $ref->{node} ) ) ;
     foreach my $refc (@{$ref->{node}}){
-        my $text    = $self->_filterText( $refc->{TEXT} ) ;
+        my $text    = $self->_filterText( $refc ) ;
         # text
         if( $self->_format() eq 'text' ){
             $self->{result} .= qq(\t) x $self->{depth} . "$text\n" ;
@@ -133,6 +157,12 @@ set Output Jcode.
   $mm->toText() ;
 
 Convert to plane text format.
+
+=head2 toMediaWiki
+
+  $mm->toMediaWiki() ;
+
+Convert to Media Wiki format.
 
 =head1 SEE ALSO
 

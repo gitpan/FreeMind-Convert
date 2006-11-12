@@ -17,4 +17,4 @@ requires:
   HTML::Entities: 0
   Jcode: 0
   XML::Simple: 0
-version: 0.02
+version: 0.03

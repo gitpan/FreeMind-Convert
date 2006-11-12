@@ -9,7 +9,6 @@ requires('HTML::Entities') ;
 
 install_script('bin/mm2mediawiki.pl') ;
 if( $^O eq 'MSWin32' ){
-    install_script('bin/mm2mediawiki.bat') ;
     features(
         'using Script for Windows' => [
             -default => 0,
